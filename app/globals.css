@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+	@apply w-full h-full p-0 m-0 antialiased;
+}
+
+html {
+	@apply scroll-smooth;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+	@apply transition-[background-color,_color] duration-[31415926535897s];
+}
+input[data-autocompleted] {
+	@apply bg-[transparent_!important];
+}
+
+.min-h-rem-screen {
+	@apply min-h-[calc(calc(100vh-4rem)-1px)];
+}
