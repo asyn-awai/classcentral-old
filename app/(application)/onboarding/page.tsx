@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import OnboardingForm from "./_Form";
 import { getCurrentUser } from "@/lib/session";
 
