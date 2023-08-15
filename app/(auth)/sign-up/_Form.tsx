@@ -8,9 +8,9 @@ import { Divider } from "@nextui-org/divider";
 import { Button } from "@nextui-org/button";
 import { FaGoogle } from "react-icons/fa";
 import FormInput from "@/components/FormInput";
-// import { signUpWithCredentials } from "@/actions/auth";
+import { createUser } from "@/actions/auth";
 import { transformError } from "@/lib/errors";
-import { toastError } from "@/lib/utils";
+import { toastError, toastSuccess } from "@/lib/utils";
 
 export default function SignInForm({
 	as,
@@ -30,32 +30,37 @@ export default function SignInForm({
 		});
 	};
 
-	useEffect(() => console.log(formLoading), [formLoading]);
+	const createCredentialsUser = async (formData: FormData) => {
+        // if (!formLoading) return;
+		// setFormLoading(() => true);
+		const res = await createUser(formData);
+        console.log(res)
+		if (!res.success) {
+			if (typeof res.error === "string") {
+				toastError(res.error);
+				return;
+			}
+			const errors = transformError(res.error);
+			setErrors(() => errors);
+		} else {
+			await signIn("credentials", {
+				email: res.data.email,
+				password: res.data.password,
+				// callbackUrl: "/onboarding",
+			})
+				.then(() => toastSuccess("Account Created"))
+				.catch(error => {
+					toastError(error.message);
+				});
+		}
+		// setFormLoading(() => false);
+	};
 
 	return (
 		<form
 			className="grid w-full grid-cols-1 gap-4"
 			noValidate
-			// action={async formData => {
-			// 	if (formLoading) return;
-			// 	setFormLoading(() => true);
-			// 	try {
-			// 		const res = await signUpWithCredentials(formData);
-			// 		if (!res.success) {
-			// 			if (typeof res.error === "string")
-			// 				toastError(res.error);
-			// 			else setErrors(transformError(res.error));
-			// 		}
-			// 	} catch (error) {
-			// 		if (error instanceof Error) {
-			// 			if (error.message === "NEXT_REDIRECT") {
-			// 				throw error;
-			// 			}
-			// 		}
-			// 	} finally {
-			// 		setFormLoading(() => false);
-			// 	}
-			// }}
+			action={createCredentialsUser}
 		>
 			<div className="flex items-center justify-center gap-4">
 				<Button
@@ -79,7 +84,7 @@ export default function SignInForm({
 					Sign up with Google
 				</Button>
 			</div>
-			{/* <Divider />
+			<Divider />
 			<FormInput
 				name="email"
 				type="email"
@@ -103,7 +108,6 @@ export default function SignInForm({
 				<Button
 					size="lg"
 					color="primary"
-					// onTouchStart={() => handleProvider("google")}
 					className="w-full"
 					type="submit"
 					isDisabled={formLoading}
@@ -111,7 +115,7 @@ export default function SignInForm({
 				>
 					Sign Up
 				</Button>
-			</div> */}
+			</div>
 		</form>
 	);
 }

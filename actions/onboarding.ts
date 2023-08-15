@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { object, string, safeParse, regex } from "valibot";
 import { getCurrentUser } from "@/lib/session";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 // const onboardingSchema = object({
 // 	name: string(),
