@@ -48,7 +48,11 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+<<<<<<< HEAD
     password      String? 
+=======
+    password      String?
+>>>>>>> 998aa11d9598da75ccbd95dc22bc6c40c12b06d5
 
     @@map( name: "users" )
 }
