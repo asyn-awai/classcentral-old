@@ -51,7 +51,7 @@ export async function createUser(formData: FormData): Promise<
 			error: "User already exists",
 		};
 	}
-	const hashedPassword = await bcrypt.hash(password, 12);
+	const hashedPassword = await bcrypt.hash(password, 10);
 	let user = {} as Awaited<ReturnType<typeof prisma.user.create>>;
 
 	try {
@@ -73,4 +73,8 @@ export async function createUser(formData: FormData): Promise<
 		data: user,
 		error: null,
 	};
+}
+
+export async function debug(error: any) {
+	console.log(error);
 }

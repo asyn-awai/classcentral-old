@@ -1,6 +1,6 @@
 "use client";
 
-import type { ActionReturn, ActionErrorState } from "@/types";
+import type { ActionReturn, ActionErrorState } from "@/types/types";
 import { useEffect, useState } from "react";
 import { HiLockClosed, HiMail } from "react-icons/hi";
 import { signIn } from "next-auth/react";

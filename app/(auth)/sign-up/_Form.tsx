@@ -1,22 +1,24 @@
 "use client";
 
 import type { Issue } from "valibot";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { HiLockClosed, HiMail } from "react-icons/hi";
 import { signIn } from "next-auth/react";
 import { Divider } from "@nextui-org/divider";
 import { Button } from "@nextui-org/button";
 import { FaGoogle } from "react-icons/fa";
 import FormInput from "@/components/FormInput";
-import { createUser } from "@/actions/auth";
+import { createUser, debug } from "@/actions/auth";
 import { transformError } from "@/lib/errors";
 import { toastError, toastSuccess } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 export default function SignInForm({
 	as,
 }: {
 	as: "student" | "teacher" | "parent" | undefined;
 }) {
+	const [, startTransition] = useTransition();
 	const [formLoading, setFormLoading] = useState(false);
 	const [errors, setErrors] = useState<
 		Record<NonNullable<Issue["path"]>[number]["key"], string | undefined>
@@ -31,10 +33,10 @@ export default function SignInForm({
 	};
 
 	const createCredentialsUser = async (formData: FormData) => {
-        // if (!formLoading) return;
+		// if (!formLoading) return;
 		// setFormLoading(() => true);
 		const res = await createUser(formData);
-        console.log(res)
+		console.log(res);
 		if (!res.success) {
 			if (typeof res.error === "string") {
 				toastError(res.error);
@@ -43,15 +45,29 @@ export default function SignInForm({
 			const errors = transformError(res.error);
 			setErrors(() => errors);
 		} else {
-			await signIn("credentials", {
-				email: res.data.email,
-				password: res.data.password,
-				// callbackUrl: "/onboarding",
-			})
-				.then(() => toastSuccess("Account Created"))
-				.catch(error => {
-					toastError(error.message);
+			try {
+				const s = await signIn("credentials", {
+					email: res.data.email,
+					password: res.data.password,
+					// callbackUrl: "/onboarding",
+					// redirect: false,
 				});
+				if (s?.error) throw new Error(s.error);
+				if (!s?.ok) {
+					console.log(s);
+					throw new Error("Something went wrong");
+				}
+				toastSuccess("Account Created");
+				redirect("/onboarding");
+			} catch (error) {
+				// startTransition(async () => await debug(error));
+				if (error instanceof Error) {
+					if (error.message === "NEXT_REDIRECT") {
+						throw error;
+					}
+					toastError(error.message);
+				}
+			}
 		}
 		// setFormLoading(() => false);
 	};
