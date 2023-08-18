@@ -1,6 +1,6 @@
-import SignUpForm from "./_Form";
 import Link from "@/components/Link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import SignUpForm from "./_Form";
 
 interface Props {
 	searchParams: {
@@ -17,7 +17,7 @@ export default async function SignUp({ searchParams: { as } }: Props) {
 	}
 
 	return (
-		<div className="flex flex-col items-center justify-center w-full max-w-md gap-y-8">
+		<div className="flex flex-col items-center justify-center w-full max-w-sm gap-y-8">
 			<h1 className="text-3xl font-bold">Sign Up</h1>
 			<SignUpForm as={as} />
 			<p className="text-foreground-500">

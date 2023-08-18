@@ -9,77 +9,81 @@ import prisma from "@/lib/prisma";
 import { credentialsSchema } from "@/lib/validation/credentials";
 
 const authOptions: NextAuthOptions = {
-  session: {
-    strategy: "jwt",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  },
-  pages: {
-    signIn: "/sign-in",
-    newUser: "/sign-up",
-    error: "/sign-in",
-  },
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    EmailProvider({
-        server: process.env.
-    })
-    // CredentialsProvider({
-    //   name: "Credentials",
-    //   credentials: {
-    //     email: {
-    //       label: "Email",
-    //       type: "text",
-    //       placeholder: "jsmith@email.com",
-    //     },
-    //     password: { label: "Password", type: "password" },
-    //   },
-    //   async authorize(credentials, req) {
-    //     if (!credentials) return null;
-    //     const { email, password } = parse(credentialsSchema, credentials);
-    //     const user = await prisma.user.findUnique({
-    //       where: {
-    //         email,
-    //       },
-    //     });
-    //     if (!user || !user.password) return null;
-    //     const isPasswordValid = await bcrypt.compare(password, user.password);
-    //     return isPasswordValid ? user : null;
-    //   },
-    // }),
-  ],
-  callbacks: {
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.image = token.picture;
-      }
-      return session;
-    },
-    async jwt({ token, user }) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email: token.email ?? undefined },
-      });
-      if (!existingUser) {
-        if (user) {
-          token.id = user.id;
-        }
-        return token;
-      }
+	secret: process.env.NEXTAUTH_SECRET,
+	session: {
+		strategy: "jwt",
+		maxAge: 60 * 60 * 24 * 30, // 30 days
+	},
+	pages: {
+		signIn: "/sign-in",
+		newUser: "/sign-up",
+		error: "/sign-in",
+		verifyRequest: "/verify-request",
+	},
+	adapter: PrismaAdapter(prisma),
+	providers: [
+		GoogleProvider({
+			clientId: process.env.GOOGLE_CLIENT_ID!,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+		}),
+		EmailProvider({
+			server: process.env.EMAIL_SERVER,
+			from: process.env.EMAIL_FROM,
+            
+		}),
+		// CredentialsProvider({
+		//   name: "Credentials",
+		//   credentials: {
+		//     email: {
+		//       label: "Email",
+		//       type: "text",
+		//       placeholder: "jsmith@email.com",
+		//     },
+		//     password: { label: "Password", type: "password" },
+		//   },
+		//   async authorize(credentials, req) {
+		//     if (!credentials) return null;
+		//     const { email, password } = parse(credentialsSchema, credentials);
+		//     const user = await prisma.user.findUnique({
+		//       where: {
+		//         email,
+		//       },
+		//     });
+		//     if (!user || !user.password) return null;
+		//     const isPasswordValid = await bcrypt.compare(password, user.password);
+		//     return isPasswordValid ? user : null;
+		//   },
+		// }),
+	],
+	callbacks: {
+		async session({ session, token }) {
+			if (token && session.user) {
+				session.user.id = token.id;
+				session.user.name = token.name;
+				session.user.email = token.email;
+				session.user.image = token.picture;
+			}
+			return session;
+		},
+		async jwt({ token, user }) {
+			const existingUser = await prisma.user.findUnique({
+				where: { email: token.email ?? undefined },
+			});
+			if (!existingUser) {
+				if (user) {
+					token.id = user.id;
+				}
+				return token;
+			}
 
-      return {
-        id: existingUser.id,
-        name: existingUser.name,
-        email: existingUser.email,
-        image: existingUser.image,
-      };
-    },
-  },
+			return {
+				id: existingUser.id,
+				name: existingUser.name,
+				email: existingUser.email,
+				image: existingUser.image,
+			};
+		},
+	},
 };
 
 export default authOptions;

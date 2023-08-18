@@ -1,29 +1,29 @@
 "use client";
 
-import type { Issue } from "valibot";
+import type { ActionReturn, ActionErrorState } from "@/types/types";
 import { useEffect, useState, useTransition } from "react";
+import { redirect } from "next/navigation";
 import { HiLockClosed, HiMail } from "react-icons/hi";
 import { signIn } from "next-auth/react";
+import toast from "react-hot-toast";
 import { Divider } from "@nextui-org/divider";
 import { Button } from "@nextui-org/button";
 import { FaGoogle } from "react-icons/fa";
 import FormInput from "@/components/FormInput";
-import { createUser, debug } from "@/actions/auth";
+import { toastSuccess, toastError } from "@/lib/utils";
+import { safeParse } from "valibot";
+import { credentialsSchema, emailSchema } from "@/lib/validation/credentials";
 import { transformError } from "@/lib/errors";
-import { toastError, toastSuccess } from "@/lib/utils";
-import { redirect } from "next/navigation";
+import { createUserProfile } from "@/actions/auth";
 
-export default function SignInForm({
+export default function SignUpForm({
 	as,
 }: {
-	as: "student" | "teacher" | "parent" | undefined;
+	as?: "student" | "teacher" | "parent";
 }) {
-	const [, startTransition] = useTransition();
 	const [formLoading, setFormLoading] = useState(false);
-	const [errors, setErrors] = useState<
-		Record<NonNullable<Issue["path"]>[number]["key"], string | undefined>
-	>({});
-
+	const [errors, setErrors] = useState<ActionErrorState>({});
+	const [, startTransition] = useTransition();
 	const handleSignInWithProvider = async (
 		provider: Parameters<typeof signIn>[0]
 	) => {
@@ -32,51 +32,41 @@ export default function SignInForm({
 		});
 	};
 
-	const createCredentialsUser = async (formData: FormData) => {
-		// if (!formLoading) return;
-		// setFormLoading(() => true);
-		const res = await createUser(formData);
-		console.log(res);
+	const userSignIn = async (formData: FormData) => {
+		if (formLoading) return;
+		setFormLoading(() => true);
+		const res = safeParse(
+			emailSchema,
+			Object.fromEntries(formData.entries())
+		);
 		if (!res.success) {
-			if (typeof res.error === "string") {
-				toastError(res.error);
-				return;
-			}
-			const errors = transformError(res.error);
-			setErrors(() => errors);
-		} else {
-			try {
-				const s = await signIn("credentials", {
-					email: res.data.email,
-					password: res.data.password,
-					// callbackUrl: "/onboarding",
-					// redirect: false,
-				});
-				if (s?.error) throw new Error(s.error);
-				if (!s?.ok) {
-					console.log(s);
-					throw new Error("Something went wrong");
-				}
-				toastSuccess("Account Created");
-				redirect("/onboarding");
-			} catch (error) {
-				// startTransition(async () => await debug(error));
-				if (error instanceof Error) {
-					if (error.message === "NEXT_REDIRECT") {
-						throw error;
-					}
-					toastError(error.message);
-				}
-			}
+			setErrors(() => transformError(res.error.issues));
+			setFormLoading(() => false);
+			return;
 		}
-		// setFormLoading(() => false);
+		const userProfileRes = await createUserProfile(res.data.email);
+		if (!userProfileRes.success) {
+			return toast.error(userProfileRes.error);
+		}
+		const s = await signIn("email", {
+			email: res.data.email,
+			// callbackUrl: "/onboarding",
+			// redirect: false,
+		});
+		if (s?.error) throw new Error(s.error);
+		if (!s?.ok) {
+			console.log(s);
+			throw new Error("Something went wrong");
+		}
+		toastSuccess("Signed in!");
+		redirect("/onboarding");
 	};
 
 	return (
 		<form
 			className="grid w-full grid-cols-1 gap-4"
 			noValidate
-			action={createCredentialsUser}
+			action={userSignIn}
 		>
 			<div className="flex items-center justify-center gap-4">
 				<Button
@@ -100,36 +90,40 @@ export default function SignInForm({
 					Sign up with Google
 				</Button>
 			</div>
-			<Divider />
+			<Divider className="mt-2" />
+			<span className="text-center text-foreground-500">OR</span>
 			<FormInput
 				name="email"
 				type="email"
 				label="Email"
 				icon={HiMail}
-				validationState={errors.email ? "invalid" : "valid"}
+				// validationState={errors.email ? "invalid" : "valid"}
 				errorMessage={errors.email}
 				setErrors={setErrors}
+				// required={false}
 			/>
-			<FormInput
+			{/* <FormInput
 				name="password"
 				type="password"
 				label="Password"
 				icon={HiLockClosed}
 				validationState={errors.password ? "invalid" : "valid"}
 				errorMessage={errors.password}
-				description="At least 6 characters long"
 				setErrors={setErrors}
-			/>
+				required={false}
+			/> */}
+			{/* <p className="cursor-pointer max-w-fit select-none relative inline-flex items-center tap-highlight-transparent outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 text-medium text-primary no-underline hover:opacity-80 active:opacity-disabled transition-opacity font-semibold">
+				Forgot password?
+			</p> */}
 			<div className="flex justify-center">
 				<Button
+					isDisabled={formLoading}
 					size="lg"
 					color="primary"
 					className="w-full"
 					type="submit"
-					isDisabled={formLoading}
-					isLoading={formLoading}
 				>
-					Sign Up
+					Sign up
 				</Button>
 			</div>
 		</form>

@@ -48,7 +48,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    password      String?
+    // password      String?
 
     @@map(name: "users")
 }
@@ -61,4 +61,22 @@ model VerificationToken {
 
     @@unique([identifier, token])
     @@map(name: "verification_tokens")
+}
+
+enum Role {
+    NONE
+    STUDENT
+    TEACHER
+    PARENT
+}
+
+model Profile {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    userId    String   @db.ObjectId
+    createdAt DateTime @default(now())
+    name      String?
+    parentIds String[] @default([])
+    role      Role     @default(NONE)
+
+    @@map(name: "profiles")
 }
