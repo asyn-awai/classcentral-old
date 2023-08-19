@@ -7,3 +7,7 @@ export function transformError(error: Issues | null) {
 		return res;
 	}, {} as Record<NonNullable<Issue["path"]>[number]["key"], string | undefined>);
 }
+
+export function elseThrow(msg: string | Error): never {
+	throw typeof msg === 'string' ? new Error(msg) : msg;
+}

@@ -48,9 +48,9 @@ export default function SignInForm() {
 		if (s?.error) throw new Error(s.error);
 		if (!s?.ok) {
 			console.log(s);
-			throw new Error("Something went wrong");
+			toastError("e")
 		}
-		toastSuccess("Signed in!");
+		else toastSuccess("Signed in!");
 		redirect("/onboarding");
 	};
 

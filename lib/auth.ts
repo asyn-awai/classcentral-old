@@ -3,10 +3,10 @@ import GoogleProvider from "next-auth/providers/google";
 // import CredentialsProvider from "next-auth/providers/credentials";
 import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import bcrypt from "bcrypt";
-import { parse } from "valibot";
+// import bcrypt from "bcrypt";
+// import { parse } from "valibot";
 import prisma from "@/lib/prisma";
-import { credentialsSchema } from "@/lib/validation/credentials";
+// import { credentialsSchema } from "@/lib/validation/credentials";
 
 const authOptions: NextAuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,

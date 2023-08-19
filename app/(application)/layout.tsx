@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import prisma from "@/lib/prisma";
+import { elseThrow } from "@/lib/errors";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -22,17 +23,33 @@ export default async function ApplicationLayout({
 		redirect("/sign-in");
 	}
 
-	const profile = await prisma.profile.findUnique({
+	let profile: Awaited<ReturnType<typeof prisma.profile.findUnique>> | null = await prisma.profile.findUnique({
 		where: {
 			id: user.id,
 		},
 	});
 
+	if (!profile) {
+		// try {
+		// 	profile = await prisma.profile.create({
+		// 		data: {
+		// 			userId: (await prisma.user.findUnique({
+		// 				where: {
+		// 					email: user.email ?? ""
+		// 				}
+		// 			}) ?? elseThrow("User not found")).id
+		// 		}
+		// 	})
+		// } catch (err) {
+		// 	console.error(err)
+		// 	throw new Error("Something went wrong")
+		// }
+		redirect("/onboarding")
+	}
+
 	if (
-		(!profile && !pathname.startsWith("/onboarding")) ||
-		(profile &&
 			profile.role === "NONE" &&
-			!pathname.startsWith("/onboarding"))
+			!pathname.startsWith("/onboarding")
 	) {
 		redirect("/onboarding");
 	}
