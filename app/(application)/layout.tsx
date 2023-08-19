@@ -23,13 +23,15 @@ export default async function ApplicationLayout({
 		redirect("/sign-in");
 	}
 
-	let profile: Awaited<ReturnType<typeof prisma.profile.findUnique>> | null = await prisma.profile.findUnique({
+	const profile: Awaited<
+		ReturnType<typeof prisma.profile.findUnique>
+	> | null = await prisma.profile.findUnique({
 		where: {
 			id: user.id,
 		},
 	});
 
-	if (!profile) {
+	if (!profile && !pathname.startsWith("/onboarding")) {
 		// try {
 		// 	profile = await prisma.profile.create({
 		// 		data: {
@@ -44,13 +46,10 @@ export default async function ApplicationLayout({
 		// 	console.error(err)
 		// 	throw new Error("Something went wrong")
 		// }
-		redirect("/onboarding")
+		redirect("/onboarding");
 	}
 
-	if (
-			profile.role === "NONE" &&
-			!pathname.startsWith("/onboarding")
-	) {
+	if (profile?.role === "NONE" && !pathname.startsWith("/onboarding")) {
 		redirect("/onboarding");
 	}
 

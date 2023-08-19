@@ -1,7 +1,6 @@
-import { ClassValue, clsx } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import toast, { type ToastOptions } from "react-hot-toast";
-// import { HiCheckCircle } from "react-icons/hi";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));

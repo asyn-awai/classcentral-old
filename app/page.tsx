@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@nextui-org/button";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-static";
 
@@ -30,30 +30,15 @@ export default function Home() {
 							id="sign-up-options"
 							className="flex flex-row flex-wrap justify-center gap-8"
 						>
-							<Button
-								size="lg"
-								color="primary"
-								as={Link}
-								href="/sign-up?as=student"
-							>
-								Students
-							</Button>
-							<Button
-								size="lg"
-								color="primary"
-								as={Link}
-								href="/sign-up?as=teacher"
-							>
-								Teachers
-							</Button>
-							<Button
-								size="lg"
-								color="primary"
-								as={Link}
-								href="/sign-up?as=parent"
-							>
-								Parents
-							</Button>
+							<Link href="/sign-up?as=student">
+								<Button size="lg">Students</Button>
+							</Link>
+							<Link href="/sign-up?as=teacher">
+								<Button size="lg">Teachers</Button>
+							</Link>
+							<Link href="/sign-up?as=parent">
+								<Button size="lg">Parents</Button>
+							</Link>
 						</div>
 					</div>
 				</div>
